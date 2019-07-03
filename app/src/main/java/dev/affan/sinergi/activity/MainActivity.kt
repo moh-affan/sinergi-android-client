@@ -35,7 +35,6 @@ class MainActivity : BaseActivity() {
 
     private var isAllowedToExit = false
     private var url = ""
-    private var isFromNotif = false
     private val webChromeClient = ChromeClient(this)
     private lateinit var sharedPref: SharedPref
 
@@ -45,7 +44,6 @@ class MainActivity : BaseActivity() {
 
     override fun initComponents() {
         sharedPref = SharedPref(this)
-        isFromNotif = intent.getBooleanExtra("FROMNOTIF", false)
         loading.visibility = View.VISIBLE
         if (NetworkCheck.isConnect(this)) {
             initWebView()
@@ -90,10 +88,6 @@ class MainActivity : BaseActivity() {
         webview.settings.allowContentAccess = true
         webview.settings.allowFileAccess = true
         webview.settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            CookieManager.getInstance().acceptThirdPartyCookies(webview)
-        }
-        CookieManager.getInstance().setAcceptCookie(true)
         val client = WebClient(loading)
         webview.addJavascriptInterface(WebAppInterface(this, this).apply {
             setOnUrlChangedListener(object : OnUrlChangedListener {
@@ -112,7 +106,7 @@ class MainActivity : BaseActivity() {
         client.injectScript(
             """
                 (function() {
-                    if(window.location.href.contains('login')){
+                    if(window.location.href.includes('login')){
                         var login = document.getElementById('login');
                         login.onclick = function(){
                             var user = document.getElementById('user').value;
@@ -154,8 +148,6 @@ class MainActivity : BaseActivity() {
                 if (url.contains("logout"))
                     sharedPref.isLogIn = false
                 if (url.contains("login")) {
-                    Log.d("contains login", "true")
-//                    if (sharedPref.isLogIn) {
                     webview?.loadUrl(
                         "javascript:(function() {" +
                                 """
@@ -164,7 +156,6 @@ class MainActivity : BaseActivity() {
                                         """.trimIndent() +
                                 "})()"
                     )
-//                    }
                 }
             }
         })
@@ -185,6 +176,7 @@ class MainActivity : BaseActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             CookieManager.getInstance().setAcceptThirdPartyCookies(webview, true)
         }
+        webview.loadUrl(Constant.DOWNLOAD_URL)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
