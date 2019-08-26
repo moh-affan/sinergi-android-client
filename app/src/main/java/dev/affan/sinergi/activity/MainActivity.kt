@@ -87,7 +87,8 @@ class MainActivity : BaseActivity() {
         webview.settings.minimumLogicalFontSize = 1
         webview.settings.allowContentAccess = true
         webview.settings.allowFileAccess = true
-        webview.settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+        webview.settings.cacheMode = WebSettings.LOAD_DEFAULT
+        webview.setInitialScale(90)
         val client = WebClient(loading)
         webview.addJavascriptInterface(WebAppInterface(this, this).apply {
             setOnUrlChangedListener(object : OnUrlChangedListener {
